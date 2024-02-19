@@ -18,7 +18,7 @@ class Bithumb:
             return 0
 
     @staticmethod
-    def get_tickers(payment_currency="KRW"):
+    async def get_tickers(payment_currency="KRW"):
         """
         빗썸이 지원하는 암호화폐의 리스트
         :param payment_currency : KRW
@@ -26,7 +26,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = PublicApi.ticker("ALL", payment_currency)
+            resp = await PublicApi.ticker("ALL", payment_currency)
             data = resp['data']
             tickers = [k for k, v in data.items() if isinstance(v, dict)]
             return tickers
@@ -34,7 +34,7 @@ class Bithumb:
             return resp
 
     @staticmethod
-    def get_ohlc(order_currency, payment_currency="KRW"):
+    async def get_ohlc(order_currency, payment_currency="KRW"):
         """
         최근 24시간 내 암호 화폐의 OHLC의 튜플
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -47,7 +47,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = PublicApi.ticker(order_currency, payment_currency)['data']
+            resp = await PublicApi.ticker(order_currency, payment_currency)['data']
             if order_currency == "ALL":
                 del resp['date']
                 data = {}
@@ -67,7 +67,7 @@ class Bithumb:
             return resp
 
     @staticmethod
-    def get_market_detail(order_currency, payment_currency="KRW"):
+    async def get_market_detail(order_currency, payment_currency="KRW"):
         """
         거래소 세부 정보 조회 (00시 기준)
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -76,7 +76,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = PublicApi.ticker(order_currency, payment_currency)
+            resp = await PublicApi.ticker(order_currency, payment_currency)
             open = resp['data']['opening_price']
             high = resp['data']['max_price']
             low = resp['data']['min_price']
@@ -87,7 +87,7 @@ class Bithumb:
             return resp
 
     @staticmethod
-    def get_current_price(order_currency, payment_currency="KRW"):
+    async def get_current_price(order_currency, payment_currency="KRW"):
         """
         최종 체결 가격 조회
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -96,7 +96,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = PublicApi.ticker(order_currency, payment_currency)
+            resp = await PublicApi.ticker(order_currency, payment_currency)
             if order_currency != "ALL":
                 return float(resp['data']['closing_price'])
             else:
@@ -106,7 +106,7 @@ class Bithumb:
             return resp
 
     @staticmethod
-    def get_orderbook(order_currency, payment_currency="KRW", limit=5):
+    async def get_orderbook(order_currency, payment_currency="KRW", limit=5):
         """
         매수/매도 호가 조회
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -116,7 +116,7 @@ class Bithumb:
         resp = None
         try:
             limit = min(limit, 30)
-            resp = PublicApi.orderbook(order_currency, payment_currency, limit)
+            resp = await PublicApi.orderbook(order_currency, payment_currency, limit)
             data = resp['data']
             for idx in range(len(data['bids'])) :
                 data['bids'][idx]['quantity'] = float(
@@ -130,20 +130,20 @@ class Bithumb:
             return resp
 
     @staticmethod
-    def get_btci():
+    async def get_btci():
         try:
-            data = PublicApi.btci()['data']
+            data = await PublicApi.btci()['data']
             data['date'] = datetime.datetime.fromtimestamp(int(data['date']) / 1e3)
             return data
         except Exception:
             return None
 
     @staticmethod
-    def get_transaction_history(order_currency, payment_currency="KRW", limit=20):
+    async def get_transaction_history(order_currency, payment_currency="KRW", limit=20):
         resp = None
         try:
             limit = min(limit, 100)
-            resp = PublicApi.transaction_history(order_currency, payment_currency, limit)
+            resp = await PublicApi.transaction_history(order_currency, payment_currency, limit)
             data = resp['data']
             for idx in range(len(data)):
                 data[idx]['units_traded'] = float(data[idx]['units_traded'])
@@ -155,7 +155,7 @@ class Bithumb:
             return None
 
     @staticmethod
-    def get_candlestick(order_currency, payment_currency="KRW", chart_intervals="24h"):
+    async def get_candlestick(order_currency, payment_currency="KRW", chart_intervals="24h"):
         """
         Candlestick API
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -165,7 +165,7 @@ class Bithumb:
                                    - index : DateTime
         """
         try:
-            resp = PublicApi.candlestick(order_currency=order_currency, payment_currency=payment_currency, chart_intervals=chart_intervals)
+            resp = await PublicApi.candlestick(order_currency=order_currency, payment_currency=payment_currency, chart_intervals=chart_intervals)
             if resp.get('status') == '0000':
                 resp = resp.get('data')
                 df = DataFrame(resp, columns=['time', 'open', 'close', 'high', 'low', 'volume'])
@@ -180,7 +180,7 @@ class Bithumb:
         except Exception:
             return None
 
-    def get_trading_fee(self, order_currency, payment_currency="KRW"):
+    async def get_trading_fee(self, order_currency, payment_currency="KRW"):
         """
         거래 수수료 조회
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -189,13 +189,13 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = self.api.account(order_currency=order_currency,
+            resp = await self.api.account(order_currency=order_currency,
                                     payment_currency=payment_currency)
             return float(resp['data']['trade_fee'])
         except Exception:
             return resp
 
-    def get_balance(self, currency):
+    async def get_balance(self, currency):
         """
         거래소 회원의 잔고 조회
         :param currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -203,7 +203,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = self.api.balance(currency=currency)
+            resp = await self.api.balance(currency=currency)
             specifier = currency.lower()
             return (float(resp['data']["total_" + specifier]),
                     float(resp['data']["in_use_" + specifier]),
@@ -212,7 +212,7 @@ class Bithumb:
         except Exception:
             return resp
 
-    def buy_limit_order(self, order_currency, price, unit,
+    async def buy_limit_order(self, order_currency, price, unit,
                         payment_currency="KRW"):
         """
         매수 주문
@@ -226,14 +226,14 @@ class Bithumb:
         try:
             unit = Bithumb._convert_unit(unit)
             price = price if payment_currency == "KRW" else f"{price:.8f}"
-            resp = self.api.place(type="bid", price=price, units=unit,
+            resp = await self.api.place(type="bid", price=price, units=unit,
                                   order_currency=order_currency,
                                   payment_currency=payment_currency)
             return "bid", order_currency, resp['order_id'], payment_currency
         except Exception:
             return resp
 
-    def sell_limit_order(self, order_currency, price, unit,
+    async def sell_limit_order(self, order_currency, price, unit,
                          payment_currency="KRW"):
         """
         매도 주문
@@ -247,14 +247,14 @@ class Bithumb:
         try:
             unit = Bithumb._convert_unit(unit)
             price = price if payment_currency == "KRW" else f"{price:.8f}"
-            resp = self.api.place(type="ask", price=price, units=unit,
+            resp = await self.api.place(type="ask", price=price, units=unit,
                                   order_currency=order_currency,
                                   payment_currency=payment_currency)
             return "ask", order_currency, resp['order_id'], payment_currency
         except Exception:
             return resp
 
-    def get_outstanding_order(self, order_desc):
+    async def get_outstanding_order(self, order_desc):
         """
         거래 미체결 수량 조회
         :param order_desc: (주문Type, currency, 주문ID)
@@ -262,7 +262,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = self.api.orders(type=order_desc[0],
+            resp = await self.api.orders(type=order_desc[0],
                                    order_currency=order_desc[1],
                                    order_id=order_desc[2],
                                    payment_currency=order_desc[3])
@@ -273,7 +273,7 @@ class Bithumb:
         except Exception:
             return resp
 
-    def get_order_completed(self, order_desc):
+    async def get_order_completed(self, order_desc):
         """
         거래 완료 정보 조회
         :param order_desc: (주문Type, currency, 주문ID)
@@ -281,7 +281,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = self.api.order_detail(type=order_desc[0],
+            resp = await self.api.order_detail(type=order_desc[0],
                                          order_currency=order_desc[1],
                                          order_id=order_desc[2],
                                          payment_currency=order_desc[3])
@@ -292,7 +292,7 @@ class Bithumb:
         except Exception:
             return resp
 
-    def cancel_order(self, order_desc):
+    async def cancel_order(self, order_desc):
         """
         매수/매도 주문 취소
         :param order_desc: (주문Type, currency, 주문ID)
@@ -300,7 +300,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = self.api.cancel(type=order_desc[0],
+            resp = await self.api.cancel(type=order_desc[0],
                                    order_currency=order_desc[1],
                                    order_id=order_desc[2],
                                    payment_currency=order_desc[3])
@@ -308,7 +308,7 @@ class Bithumb:
         except Exception:
             return resp
 
-    def buy_market_order(self, order_currency, unit, payment_currency="KRW"):
+    async def buy_market_order(self, order_currency, unit, payment_currency="KRW"):
         """
         시장가 매수
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -319,14 +319,14 @@ class Bithumb:
         resp = None
         try:
             unit = Bithumb._convert_unit(unit)
-            resp = self.api.market_buy(order_currency=order_currency,
+            resp = await self.api.market_buy(order_currency=order_currency,
                                        payment_currency=payment_currency,
                                        units=unit)
             return "bid", order_currency, resp['order_id'], payment_currency
         except Exception:
             return resp
 
-    def sell_market_order(self, order_currency, unit, payment_currency="KRW"):
+    async def sell_market_order(self, order_currency, unit, payment_currency="KRW"):
         """
         시장가 매도
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -337,14 +337,14 @@ class Bithumb:
         resp = None
         try:
             unit = Bithumb._convert_unit(unit)
-            resp = self.api.market_sell(order_currency=order_currency,
+            resp = await self.api.market_sell(order_currency=order_currency,
                                         payment_currency=payment_currency,
                                         units=unit)
             return "ask", order_currency, resp['order_id'], payment_currency
         except Exception:
             return resp
 
-    def withdraw_coin(self, withdraw_unit:float, target_address:str, destination_tag_or_memo, withdraw_currency:str):
+    async def withdraw_coin(self, withdraw_unit:float, target_address:str, destination_tag_or_memo, withdraw_currency:str):
         """
         :unit                   : 출금하고자 하는 코인 수량
         :address                : 코인 별 출금 주소
@@ -354,7 +354,7 @@ class Bithumb:
         resp = None
         try:
             unit = Bithumb._convert_unit(withdraw_unit)
-            resp = self.api.withdraw_coin(units=unit,
+            resp = await self.api.withdraw_coin(units=unit,
                                         address=target_address,
                                         destination=destination_tag_or_memo,
                                         currency=withdraw_currency)
@@ -362,7 +362,7 @@ class Bithumb:
         except Exception:
             return resp
 
-    def withdraw_cash(self, target_bank:str, target_account:str, target_amount:int):
+    async def withdraw_cash(self, target_bank:str, target_account:str, target_amount:int):
         """
         :bank                   : [은행코드_은행명] ex: 011_농협은행
         :account                : 출금 계좌번호
@@ -370,7 +370,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = self.api.withdraw_coin(bank=target_bank,
+            resp = await self.api.withdraw_coin(bank=target_bank,
                                         account=target_account,
                                         price=target_amount)
             return resp['order_id']
