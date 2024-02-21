@@ -1,4 +1,4 @@
-from async_bithumb.core import *
+from core import *
 from pandas import DataFrame
 import pandas as pd
 import datetime
@@ -6,7 +6,7 @@ import math
 
 
 class Bithumb:
-    def __init__(self, conkey, seckey):
+    def __init__(self, conkey='', seckey=''):
         self.api = PrivateApi(conkey, seckey)
 
     @staticmethod
@@ -174,22 +174,22 @@ class Bithumb:
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
         :param payment_currency : KRW
         :param chart_instervals : 24h {1m, 3m, 5m, 10m, 30m, 1h, 6h, 12h, 24h 사용 가능}
-        :return                 : DataFrame (시가, 고가, 저가, 종가, 거래량)
-                                   - index : DateTime
+        :return                 : DataFrame (타임스탬프: int, 시가: str, 고가: str, 저가: str, 종가: str, 거래량: str)
+                                   - index : DateTime(Asia/Seoul)
         """
         try:
             resp = await PublicApi.candlestick(order_currency=order_currency, payment_currency=payment_currency, chart_intervals=chart_intervals)
+
             if resp.get('status') == '0000':
-                resp = resp.get('data')
-                df = DataFrame(resp, columns=['time', 'open', 'close', 'high', 'low', 'volume'])
-                df = df.set_index('time')
+                data = resp.get('data')
+                df = DataFrame(data, columns=['timestamp', 'open', 'close', 'high', 'low', 'volume'])
+                df = df.set_index('timestamp')
                 df = df[~df.index.duplicated()]
-                df = df[['open', 'high', 'low', 'close', 'volume']]
+                df = df[['timestamp','open', 'high', 'low', 'close', 'volume']]
                 df.index = pd.to_datetime(df.index, unit='ms', utc=True)
                 df.index = df.index.tz_convert('Asia/Seoul')
                 df.index = df.index.tz_localize(None)
-
-                return df.astype(float)
+                return df
         except Exception as x:
             print(resp)
             raise x
@@ -424,7 +424,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await self.api.withdraw_coin(order_currency=order_currency,
+            resp = await self.api.user_transactions(order_currency=order_currency,
                                           payment_currency=payment_currency,
                                           offset=offset,
                                           count=count,
@@ -436,10 +436,11 @@ class Bithumb:
 
 
 if __name__ == "__main__":
-    # print(Bithumb.get_orderbook("BTC"))
+    print(asyncio.run(Bithumb.get_orderbook("BTC")))
     # print(Bithumb.get_current_price("BTC"))
     # print(Bithumb.get_current_price("ALL"))
     # 1m, 3m, 5m, 10m, 30m, 1h, 6h, 12h, 24h
 
-    df = Bithumb.get_candlestick("BTC", chart_intervals="12h")
-    print(df[df.duplicated()])
+    df = asyncio.run(Bithumb.get_candlestick("BTC", chart_intervals="12h"))
+    print(df)
+    breakpoint()

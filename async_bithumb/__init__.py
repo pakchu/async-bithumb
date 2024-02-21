@@ -1,5 +1,7 @@
-from async_bithumb.client import Bithumb
-from async_bithumb.websocket import WebSocketManager
+from client import Bithumb
+from websocket import WebSocketManager
+
+__version__ = "1.0.1"
 
 async def get_ohlc(order_currency, payment_currency="KRW"):
     return await Bithumb.get_ohlc(order_currency, payment_currency)

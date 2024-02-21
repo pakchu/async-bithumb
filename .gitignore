@@ -1,0 +1,4 @@
+/dist
+/build
+/async_bithumb.egg-info
+**/__pycache__
