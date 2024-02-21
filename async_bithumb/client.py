@@ -1,4 +1,4 @@
-from pybithumb.core import *
+from async_bithumb.core import *
 from pandas import DataFrame
 import pandas as pd
 import datetime
@@ -30,8 +30,10 @@ class Bithumb:
             data = resp['data']
             tickers = [k for k, v in data.items() if isinstance(v, dict)]
             return tickers
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     @staticmethod
     async def get_ohlc(order_currency, payment_currency="KRW"):
@@ -63,8 +65,10 @@ class Bithumb:
                     float(resp['min_price']),
                     float(resp['closing_price']))
             }
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     @staticmethod
     async def get_market_detail(order_currency, payment_currency="KRW"):
@@ -83,8 +87,10 @@ class Bithumb:
             close = resp['data']['closing_price']
             volume = resp['data']['units_traded']
             return float(open), float(high), float(low), float(close), float(volume)
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     @staticmethod
     async def get_current_price(order_currency, payment_currency="KRW"):
@@ -102,8 +108,10 @@ class Bithumb:
             else:
                 del resp["data"]['date']
                 return resp["data"]
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     @staticmethod
     async def get_orderbook(order_currency, payment_currency="KRW", limit=5):
@@ -126,8 +134,10 @@ class Bithumb:
                 data['bids'][idx]['price'] = float(data['bids'][idx]['price'])
                 data['asks'][idx]['price'] = float(data['asks'][idx]['price'])
             return data
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     @staticmethod
     async def get_btci():
@@ -135,8 +145,10 @@ class Bithumb:
             data = await PublicApi.btci()['data']
             data['date'] = datetime.datetime.fromtimestamp(int(data['date']) / 1e3)
             return data
-        except Exception:
-            return None
+        except Exception as x:
+            print(data)
+            raise x
+
 
     @staticmethod
     async def get_transaction_history(order_currency, payment_currency="KRW", limit=20):
@@ -150,9 +162,10 @@ class Bithumb:
                 data[idx]['price'] = float(data[idx]['price'])
                 data[idx]['total'] = float(data[idx]['total'])
             return data
-        except Exception as e:
-            print(e)
-            return None
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     @staticmethod
     async def get_candlestick(order_currency, payment_currency="KRW", chart_intervals="24h"):
@@ -177,8 +190,10 @@ class Bithumb:
                 df.index = df.index.tz_localize(None)
 
                 return df.astype(float)
-        except Exception:
-            return None
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def get_trading_fee(self, order_currency, payment_currency="KRW"):
         """
@@ -192,8 +207,10 @@ class Bithumb:
             resp = await self.api.account(order_currency=order_currency,
                                     payment_currency=payment_currency)
             return float(resp['data']['trade_fee'])
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def get_balance(self, currency):
         """
@@ -209,8 +226,10 @@ class Bithumb:
                     float(resp['data']["in_use_" + specifier]),
                     float(resp['data']["total_krw"]),
                     float(resp['data']["in_use_krw"]))
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def buy_limit_order(self, order_currency, price, unit,
                         payment_currency="KRW"):
@@ -230,8 +249,10 @@ class Bithumb:
                                   order_currency=order_currency,
                                   payment_currency=payment_currency)
             return "bid", order_currency, resp['order_id'], payment_currency
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def sell_limit_order(self, order_currency, price, unit,
                          payment_currency="KRW"):
@@ -251,8 +272,10 @@ class Bithumb:
                                   order_currency=order_currency,
                                   payment_currency=payment_currency)
             return "ask", order_currency, resp['order_id'], payment_currency
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def get_outstanding_order(self, order_desc):
         """
@@ -270,8 +293,10 @@ class Bithumb:
                 return None
             # HACK : 빗썸이 데이터를 리스트에 넣어줌
             return resp['data'][0]['units_remaining']
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def get_order_completed(self, order_desc):
         """
@@ -289,8 +314,10 @@ class Bithumb:
                 return None
             # HACK : 빗썸이 데이터를 리스트에 넣어줌
             return resp['data'][0]
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def cancel_order(self, order_desc):
         """
@@ -305,8 +332,10 @@ class Bithumb:
                                    order_id=order_desc[2],
                                    payment_currency=order_desc[3])
             return resp['status'] == '0000'
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def buy_market_order(self, order_currency, unit, payment_currency="KRW"):
         """
@@ -323,8 +352,10 @@ class Bithumb:
                                        payment_currency=payment_currency,
                                        units=unit)
             return "bid", order_currency, resp['order_id'], payment_currency
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def sell_market_order(self, order_currency, unit, payment_currency="KRW"):
         """
@@ -341,8 +372,10 @@ class Bithumb:
                                         payment_currency=payment_currency,
                                         units=unit)
             return "ask", order_currency, resp['order_id'], payment_currency
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def withdraw_coin(self, withdraw_unit:float, target_address:str, destination_tag_or_memo, withdraw_currency:str):
         """
@@ -359,8 +392,10 @@ class Bithumb:
                                         destination=destination_tag_or_memo,
                                         currency=withdraw_currency)
             return resp['order_id']
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
 
     async def withdraw_cash(self, target_bank:str, target_account:str, target_amount:int):
         """
@@ -374,8 +409,31 @@ class Bithumb:
                                         account=target_account,
                                         price=target_amount)
             return resp['order_id']
-        except Exception:
-            return resp
+        except Exception as x:
+            print(resp)
+            raise x
+
+
+    async def user_transactions(self, order_currency, payment_currency="KRW", offset=0, count=20, search=0):
+        """
+        :order_currency: 주문 통화 (base)
+        :payment_currency: 결제 통화 (quote)
+        :offset: 인덱스 시작값, 0 ~
+        :count: 불러올 개수, 1 ~ 50
+        :search: 0 : 전체, 1 : 매수 완료, 2 : 매도 완료, 3 : 출금 중 4 : 입금, 5 : 출금, 9 : KRW 입금 중
+        """
+        resp = None
+        try:
+            resp = await self.api.withdraw_coin(order_currency=order_currency,
+                                          payment_currency=payment_currency,
+                                          offset=offset,
+                                          count=count,
+                                          search=search)
+            return resp['order_id']
+        except Exception as x:
+            print(resp)
+            raise x
+
 
 if __name__ == "__main__":
     # print(Bithumb.get_orderbook("BTC"))

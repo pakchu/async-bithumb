@@ -1,25 +1,20 @@
-from pybithumb.client import Bithumb
-from .websocket import WebSocketManager
+from async_bithumb.client import Bithumb
+from async_bithumb.websocket import WebSocketManager
 
 async def get_ohlc(order_currency, payment_currency="KRW"):
     return await Bithumb.get_ohlc(order_currency, payment_currency)
 
-
 async def get_tickers(payment_currency="KRW"):
     return await Bithumb.get_tickers(payment_currency)
-
 
 async def get_market_detail(order_currency, payment_currency="KRW"):
     return await Bithumb.get_market_detail(order_currency, payment_currency)
 
-
 async def get_current_price(order_currency, payment_currency="KRW"):
     return await Bithumb.get_current_price(order_currency, payment_currency)
 
-
 async def get_orderbook(order_currency, payment_currency="KRW", limit=5):
     return await Bithumb.get_orderbook(order_currency, payment_currency, limit)
-
 
 async def get_transaction_history(order_currency, payment_currency="KRW", limit=20):
     return await Bithumb.get_transaction_history(order_currency, payment_currency, limit)

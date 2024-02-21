@@ -1,21 +1,23 @@
 # bithumb-api
-Python Wrapper for Bithumb API
+Asynchronus Python Wrapper for Bithumb API
+Based on pybithumb: https://github.com/sharebook-kr/pybithumb
 
 ## Installation
 ```sh
-pip install pybithumb
+pip install async-bithumb
 ```
 
 ## Import
 ```python
-from pybithumb import Bithumb
+import asyncio
+from async_bithumb import Bithumb
 ```
 
 ## Public API
 ####  암호화폐 목록
 빗썸이 지원하는 암호화폐 목록을 얻어온다.
 ```python
-print(Bithumb.get_tickers())
+print(asyncio.run(Bithumb.get_tickers()))
 ```
 ```
 ['BTC', 'ETH', 'DASH', 'LTC', 'ETC', 'XRP', 'BCH', 'XMR', 'ZEC', 'QTUM', 'BTG', 'EOS', 'ICX', 'TRX', 'ELF', 'MCO', 'OMG', 'KNC', 'GNT', 'ZIL', 'WAXP', 'POWR', 'LRC', 'STEEM', 'STRAT', 'AE', 'ZRX', 'REP', 'XEM', 'SNT', 'ADA', 'CTXC', 'BAT', 'WTC', 'THETA', 'LOOM', 'WAVES', 'ITC', 'TRUE', 'LINK', 'RNT', 'ENJ', 'PLX', 'VET', 'MTL', 'INS', 'IOST', 'TMTG', 'QKC', 'BZNT', 'HDAC', 'NPXS', 'LBA', 'WET', 'AMO', 'BSV', 'APIS', 'DAC', 'ORBS', 'VALOR', 'CON', 'ANKR', 'MIX', 'LAMB', 'CRO', 'FX', 'CHR', 'MBL', 'MXC', 'FAB', 'OGO', 'DVP', 'FCT', 'FNB', 'FZZ', 'TRV', 'PCM', 'DAD', 'AOA', 'XSR', 'WOM', 'SOC', 'EM', 'QBZ', 'BOA', 'WPX', 'FLETA', 'BNP', 'SXP', 'COS', 'EL', 'BASIC', 'HC', 'BCD', 'XVG', 'XLM', 'PIVX', 'GXC', 'BHP', 'BTT', 'HYC', 'VSYS', 'IPX', 'WICC', 'LUNA', 'AION', 'COSM']
@@ -24,8 +26,8 @@ print(Bithumb.get_tickers())
 #### 최근 체결가격
 get_current_price 함수는 최근 체결 가격을 조회한다.
 ```python
-for coin in Bithumb.get_tickers()[:5]:
-    print(coin, Bithumb.get_current_price(coin))
+for coin in asyncio.run(Bithumb.get_tickers())[:5]:
+    print(coin, asyncio.run(Bithumb.get_current_price(coin)))
 ```
 ```
 BTC 8190000.0
@@ -38,8 +40,8 @@ ETC 6180.0
 #### 시장 현황 상세정보
 get_market_detail 함수는 00시 기준으로 시가/고가/저가/종가/거래량 정보를 반환한다.
 ```python
-for coin in  Bithumb.get_tickers():
-    print(coin, Bithumb.get_market_detail(coin))
+for coin in  asyncio.run(Bithumb.get_tickers()):
+    print(coin, asyncio.run(Bithumb.get_market_detail(coin)))
 ```
 ```
 BTC (8162000.0, 8240000.0, 8050000.0, 8190000.0, 3117.77267769)
@@ -52,14 +54,14 @@ ETC (6150.0, 6250.0, 6075.0, 6180.0, 77986.83409064)
 get_orderbook 함수는 호가 정보를 가져온다.
 기본적으로 5개를 가져오며, limit 파라미터로 30개까지 지정할 수 있다.
 ```python
-for coin in  Bithumb.get_tickers():
-    print(coin, Bithumb.get_orderbook(coin))
+for coin in  asyncio.run(Bithumb.get_tickers()):
+    print(coin, asyncio.run(Bithumb.get_orderbook(coin)))
 ```
 
 #### 시간별 가격정보
 시가/종가/고가/저가/거래량 정보를 DataFrame으로 반환한다.
 ```python
-df = Bithumb.get_candlestick("BTC")
+df = asyncio.run(Bithumb.get_candlestick("BTC"))
 print(df.tail(5))
 ```
 
@@ -77,7 +79,7 @@ chart_intervals 파라미터로 조회 간격을 조정할 수 있다.
 - 1m, 3m, 5m, 10m, 30m, 1h, 6h, 12h, 24h
 
 ```python
-df = Bithumb.get_candlestick("BTC", chart_intervals="30m")
+df = asyncio.run(Bithumb.get_candlestick("BTC", chart_intervals="30m"))
 print(df.tail(5))
 ```
 
@@ -111,29 +113,34 @@ bithumb = Bithumb("conkey", "seckey")
 
 #### 수수료 조회
 ```python
-print(bithumb.get_trading_fee())
+print(asyncio.run(bithumb.get_trading_fee()))
 ```
 
 #### 잔고 조회
 ```python
-for coin in Bithumb.get_tickers():
-    print(coin, bithumb.get_balance(coin))
+for coin in asyncio.run(Bithumb.get_tickers():)
+    print(coin, asyncio.run(bithumb.get_balance(coin)))
 ```
 
 #### 매수/매도 주문
 비트코인을 1100만원에 1개 매수/매도한다.
 ```python
-desc = bithumb.buy_limit_order("BTC", 11000000, 1)
-desc = bithumb.sell_limit_order("BTC", 11000000, 1)
+desc = asyncio.run(bithumb.buy_limit_order("BTC", 11000000, 1))
+desc = asyncio.run(bithumb.sell_limit_order("BTC", 11000000, 1))
 ```
 
 #### 매수/매도 잔량 확인
 ```python
-quanity = bithumb.get_outstanding_order(desc)
+quanity = asyncio.run(bithumb.get_outstanding_order(desc))
 ```
 
 #### 매수/매도 주문 취소
 ```python
-status = bithumb.cancel_order(desc)
+status = asyncio.run(bithumb.cancel_order(desc))
 ```
 
+#### 마켓별 주문 조회
+비트코인 원화 마켓의 최신 주문내역을 가져온다.
+```python
+status = asyncio.run(bithumb.user_transactions("BTC", "KRW"))
+```
