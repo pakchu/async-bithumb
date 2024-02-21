@@ -1,4 +1,4 @@
-from errors import AioHttpRequestError, BithumbPrivateError, BithumbPublicError
+from .errors import AioHttpRequestError, BithumbPrivateError, BithumbPublicError
 import asyncio
 import base64, urllib, hashlib, hmac, time
 import aiohttp

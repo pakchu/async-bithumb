@@ -1,4 +1,4 @@
-from core import *
+from .core import *
 from pandas import DataFrame
 import pandas as pd
 import datetime
@@ -31,7 +31,7 @@ class Bithumb:
             tickers = [k for k, v in data.items() if isinstance(v, dict)]
             return tickers
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "get_tickers" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -66,7 +66,7 @@ class Bithumb:
                     float(resp['closing_price']))
             }
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "get_ohlc" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -88,7 +88,7 @@ class Bithumb:
             volume = resp['data']['units_traded']
             return float(open), float(high), float(low), float(close), float(volume)
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "get_market_detail" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -109,7 +109,7 @@ class Bithumb:
                 del resp["data"]['date']
                 return resp["data"]
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "get_current_price" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -146,7 +146,7 @@ class Bithumb:
             data['date'] = datetime.datetime.fromtimestamp(int(data['date']) / 1e3)
             return data
         except Exception as x:
-            print(data)
+            print('AsyncBithumb: in "get_btci" got an error.\nResponse from Bithumb: ', data)
             raise x
 
 
@@ -163,7 +163,7 @@ class Bithumb:
                 data[idx]['total'] = float(data[idx]['total'])
             return data
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "get_transaction_history" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -183,7 +183,7 @@ class Bithumb:
             if resp.get('status') == '0000':
                 data = resp.get('data')
                 df = DataFrame(data, columns=['timestamp', 'open', 'close', 'high', 'low', 'volume'])
-                df = df.set_index('timestamp')
+                df.index = df.timestamp.astype(int).rename(None)
                 df = df[~df.index.duplicated()]
                 df = df[['timestamp','open', 'high', 'low', 'close', 'volume']]
                 df.index = pd.to_datetime(df.index, unit='ms', utc=True)
@@ -191,7 +191,7 @@ class Bithumb:
                 df.index = df.index.tz_localize(None)
                 return df
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "get_candlestick" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -208,7 +208,7 @@ class Bithumb:
                                     payment_currency=payment_currency)
             return float(resp['data']['trade_fee'])
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "get_trading_fee" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -227,7 +227,7 @@ class Bithumb:
                     float(resp['data']["total_krw"]),
                     float(resp['data']["in_use_krw"]))
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "get_balance" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -250,7 +250,7 @@ class Bithumb:
                                   payment_currency=payment_currency)
             return "bid", order_currency, resp['order_id'], payment_currency
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "buy_limit_order" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -273,7 +273,7 @@ class Bithumb:
                                   payment_currency=payment_currency)
             return "ask", order_currency, resp['order_id'], payment_currency
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "sell_limit_order" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -294,7 +294,7 @@ class Bithumb:
             # HACK : 빗썸이 데이터를 리스트에 넣어줌
             return resp['data'][0]['units_remaining']
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "get_outstanding_order" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -315,7 +315,7 @@ class Bithumb:
             # HACK : 빗썸이 데이터를 리스트에 넣어줌
             return resp['data'][0]
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "get_order_completed" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -333,7 +333,7 @@ class Bithumb:
                                    payment_currency=order_desc[3])
             return resp['status'] == '0000'
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "cancel_order" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -353,7 +353,7 @@ class Bithumb:
                                        units=unit)
             return "bid", order_currency, resp['order_id'], payment_currency
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "buy_market_order" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -373,7 +373,7 @@ class Bithumb:
                                         units=unit)
             return "ask", order_currency, resp['order_id'], payment_currency
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "sell_market_order" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -410,7 +410,7 @@ class Bithumb:
                                         price=target_amount)
             return resp['order_id']
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "withdraw_cash" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
@@ -431,7 +431,7 @@ class Bithumb:
                                           search=search)
             return resp['order_id']
         except Exception as x:
-            print(resp)
+            print('AsyncBithumb: in "user_transactions" got an error.\nResponse from Bithumb: ', resp)
             raise x
 
 
