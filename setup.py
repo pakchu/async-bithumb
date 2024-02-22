@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name            = 'async-bithumb',
-    version         = '1.0.2',
+    version         = '1.0.3',
     description     = 'Asynchronus pybithumb library. Based on pybithumb library: https://github.com/sharebook-kr/pybithumb',
     url             = 'https://github.com/pakchu/async-bithumb',
     author          = 'Lukas Yoo, Brayden Jo, pakchu',

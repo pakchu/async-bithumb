@@ -292,7 +292,7 @@ class Bithumb:
             if resp['status'] == '5600':
                 return None
             # HACK : 빗썸이 데이터를 리스트에 넣어줌
-            return resp['data'][0]['units_remaining']
+            return resp['data']
         except Exception as x:
             print('AsyncBithumb: in "get_outstanding_order" got an error.\nResponse from Bithumb: ', resp)
             raise x
@@ -313,7 +313,7 @@ class Bithumb:
             if resp['status'] == '5600':
                 return None
             # HACK : 빗썸이 데이터를 리스트에 넣어줌
-            return resp['data'][0]
+            return resp['data']
         except Exception as x:
             print('AsyncBithumb: in "get_order_completed" got an error.\nResponse from Bithumb: ', resp)
             raise x
