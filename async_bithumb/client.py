@@ -6,19 +6,19 @@ import math
 
 
 class Bithumb:
-    def __init__(self, conkey='', seckey=''):
-        self.api = PrivateApi(conkey, seckey)
+    def __init__(self, conkey='', seckey='', public_api_rate_limit=150, private_api_rate_limit=140):
+        self.public_api = PublicApi(public_api_rate_limit)
+        self.private_api = PrivateApi(conkey, seckey, private_api_rate_limit)
 
     @staticmethod
-    def _convert_unit(unit):
+    def _convert_unit(units):
         try:
             unit = math.floor(unit * 10000) / 10000
             return unit
         except:
             return 0
 
-    @staticmethod
-    async def get_tickers(payment_currency="KRW"):
+    async def get_tickers(self, payment_currency="KRW"):
         """
         빗썸이 지원하는 암호화폐의 리스트
         :param payment_currency : KRW
@@ -26,17 +26,20 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await PublicApi.ticker("ALL", payment_currency)
+            resp = await self.public_api.ticker("ALL", payment_currency)
             data = resp['data']
             tickers = [k for k, v in data.items() if isinstance(v, dict)]
             return tickers
         except Exception as x:
-            print('AsyncBithumb: in "get_tickers" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "get_tickers" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
-    @staticmethod
-    async def get_ohlc(order_currency, payment_currency="KRW"):
+    async def get_ohlc(self, order_currency, payment_currency="KRW"):
         """
         최근 24시간 내 암호 화폐의 OHLC의 튜플
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -49,7 +52,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await PublicApi.ticker(order_currency, payment_currency)['data']
+            resp = await self.public_api.ticker(order_currency, payment_currency)['data']
             if order_currency == "ALL":
                 del resp['date']
                 data = {}
@@ -66,12 +69,15 @@ class Bithumb:
                     float(resp['closing_price']))
             }
         except Exception as x:
-            print('AsyncBithumb: in "get_ohlc" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "get_ohlc" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
-    @staticmethod
-    async def get_market_detail(order_currency, payment_currency="KRW"):
+    async def get_market_detail(self, order_currency, payment_currency="KRW"):
         """
         거래소 세부 정보 조회 (00시 기준)
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -80,7 +86,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await PublicApi.ticker(order_currency, payment_currency)
+            resp = await self.public_api.ticker(order_currency, payment_currency)
             open = resp['data']['opening_price']
             high = resp['data']['max_price']
             low = resp['data']['min_price']
@@ -88,12 +94,15 @@ class Bithumb:
             volume = resp['data']['units_traded']
             return float(open), float(high), float(low), float(close), float(volume)
         except Exception as x:
-            print('AsyncBithumb: in "get_market_detail" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "get_market_detail" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
-    @staticmethod
-    async def get_current_price(order_currency, payment_currency="KRW"):
+    async def get_current_price(self, order_currency, payment_currency="KRW"):
         """
         최종 체결 가격 조회
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -102,19 +111,22 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await PublicApi.ticker(order_currency, payment_currency)
+            resp = await self.public_api.ticker(order_currency, payment_currency)
             if order_currency != "ALL":
                 return float(resp['data']['closing_price'])
             else:
                 del resp["data"]['date']
                 return resp["data"]
         except Exception as x:
-            print('AsyncBithumb: in "get_current_price" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "get_current_price" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
-    @staticmethod
-    async def get_orderbook(order_currency, payment_currency="KRW", limit=5):
+    async def get_orderbook(self, order_currency, payment_currency="KRW", limit=5):
         """
         매수/매도 호가 조회
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -124,7 +136,7 @@ class Bithumb:
         resp = None
         try:
             limit = min(limit, 30)
-            resp = await PublicApi.orderbook(order_currency, payment_currency, limit)
+            resp = await self.public_api.orderbook(order_currency, payment_currency, limit)
             data = resp['data']
             for idx in range(len(data['bids'])) :
                 data['bids'][idx]['quantity'] = float(
@@ -139,10 +151,9 @@ class Bithumb:
             raise x
 
 
-    @staticmethod
-    async def get_btci():
+    async def get_btci(self):
         try:
-            data = await PublicApi.btci()['data']
+            data = await self.public_api.btci()['data']
             data['date'] = datetime.datetime.fromtimestamp(int(data['date']) / 1e3)
             return data
         except Exception as x:
@@ -150,12 +161,11 @@ class Bithumb:
             raise x
 
 
-    @staticmethod
-    async def get_transaction_history(order_currency, payment_currency="KRW", limit=20):
+    async def get_transaction_history(self, order_currency, payment_currency="KRW", limit=20):
         resp = None
         try:
             limit = min(limit, 100)
-            resp = await PublicApi.transaction_history(order_currency, payment_currency, limit)
+            resp = await self.public_api.transaction_history(order_currency, payment_currency, limit)
             data = resp['data']
             for idx in range(len(data)):
                 data[idx]['units_traded'] = float(data[idx]['units_traded'])
@@ -163,12 +173,15 @@ class Bithumb:
                 data[idx]['total'] = float(data[idx]['total'])
             return data
         except Exception as x:
-            print('AsyncBithumb: in "get_transaction_history" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "get_transaction_history" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
-    @staticmethod
-    async def get_candlestick(order_currency, payment_currency="KRW", chart_intervals="24h"):
+    async def get_candlestick(self, order_currency, payment_currency="KRW", chart_intervals="24h"):
         """
         Candlestick API
         :param order_currency   : BTC/ETH/DASH/LTC/ETC/XRP/BCH/XMR/ZEC/QTUM/BTG/EOS/ICX/VEN/TRX/ELF/MITH/MCO/OMG/KNC
@@ -178,7 +191,7 @@ class Bithumb:
                                    - index : DateTime(Asia/Seoul)
         """
         try:
-            resp = await PublicApi.candlestick(order_currency=order_currency, payment_currency=payment_currency, chart_intervals=chart_intervals)
+            resp = await self.public_api.candlestick(order_currency=order_currency, payment_currency=payment_currency, chart_intervals=chart_intervals)
 
             if resp.get('status') == '0000':
                 data = resp.get('data')
@@ -191,7 +204,11 @@ class Bithumb:
                 df.index = df.index.tz_localize(None)
                 return df
         except Exception as x:
-            print('AsyncBithumb: in "get_candlestick" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "get_candlestick" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -204,11 +221,16 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await self.api.account(order_currency=order_currency,
+            resp = await self.private_api.account(order_currency=order_currency,
                                     payment_currency=payment_currency)
+
             return float(resp['data']['trade_fee'])
         except Exception as x:
-            print('AsyncBithumb: in "get_trading_fee" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "get_trading_fee" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -220,14 +242,18 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await self.api.balance(currency=currency)
+            resp = await self.private_api.balance(currency=currency)
             specifier = currency.lower()
             return (float(resp['data']["total_" + specifier]),
                     float(resp['data']["in_use_" + specifier]),
                     float(resp['data']["total_krw"]),
                     float(resp['data']["in_use_krw"]))
         except Exception as x:
-            print('AsyncBithumb: in "get_balance" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "get_balance" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -245,12 +271,16 @@ class Bithumb:
         try:
             unit = Bithumb._convert_unit(unit)
             price = price if payment_currency == "KRW" else f"{price:.8f}"
-            resp = await self.api.place(type="bid", price=price, units=unit,
+            resp = await self.private_api.place(type="bid", price=price, units=unit,
                                   order_currency=order_currency,
                                   payment_currency=payment_currency)
             return "bid", order_currency, resp['order_id'], payment_currency
         except Exception as x:
-            print('AsyncBithumb: in "buy_limit_order" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "buy_limit_order" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -268,12 +298,16 @@ class Bithumb:
         try:
             unit = Bithumb._convert_unit(unit)
             price = price if payment_currency == "KRW" else f"{price:.8f}"
-            resp = await self.api.place(type="ask", price=price, units=unit,
+            resp = await self.private_api.place(type="ask", price=price, units=unit,
                                   order_currency=order_currency,
                                   payment_currency=payment_currency)
             return "ask", order_currency, resp['order_id'], payment_currency
         except Exception as x:
-            print('AsyncBithumb: in "sell_limit_order" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "sell_limit_order" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -285,7 +319,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await self.api.orders(type=order_desc[0],
+            resp = await self.private_api.orders(type=order_desc[0],
                                    order_currency=order_desc[1],
                                    order_id=order_desc[2],
                                    payment_currency=order_desc[3])
@@ -294,7 +328,11 @@ class Bithumb:
             # HACK : 빗썸이 데이터를 리스트에 넣어줌
             return resp['data']
         except Exception as x:
-            print('AsyncBithumb: in "get_outstanding_order" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "get_outstanding_order" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -306,7 +344,7 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await self.api.order_detail(type=order_desc[0],
+            resp = await self.private_api.order_detail(type=order_desc[0],
                                          order_currency=order_desc[1],
                                          order_id=order_desc[2],
                                          payment_currency=order_desc[3])
@@ -315,7 +353,11 @@ class Bithumb:
             # HACK : 빗썸이 데이터를 리스트에 넣어줌
             return resp['data']
         except Exception as x:
-            print('AsyncBithumb: in "get_order_completed" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "get_order_completed" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -327,13 +369,17 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await self.api.cancel(type=order_desc[0],
+            resp = await self.private_api.cancel(type=order_desc[0],
                                    order_currency=order_desc[1],
                                    order_id=order_desc[2],
                                    payment_currency=order_desc[3])
             return resp['status'] == '0000'
         except Exception as x:
-            print('AsyncBithumb: in "cancel_order" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "cancel_order" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -348,12 +394,16 @@ class Bithumb:
         resp = None
         try:
             unit = Bithumb._convert_unit(unit)
-            resp = await self.api.market_buy(order_currency=order_currency,
+            resp = await self.private_api.market_buy(order_currency=order_currency,
                                        payment_currency=payment_currency,
                                        units=unit)
             return "bid", order_currency, resp['order_id'], payment_currency
         except Exception as x:
-            print('AsyncBithumb: in "buy_market_order" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "buy_market_order" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -368,12 +418,16 @@ class Bithumb:
         resp = None
         try:
             unit = Bithumb._convert_unit(unit)
-            resp = await self.api.market_sell(order_currency=order_currency,
+            resp = await self.private_api.market_sell(order_currency=order_currency,
                                         payment_currency=payment_currency,
                                         units=unit)
             return "ask", order_currency, resp['order_id'], payment_currency
         except Exception as x:
-            print('AsyncBithumb: in "sell_market_order" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "sell_market_order" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -387,7 +441,7 @@ class Bithumb:
         resp = None
         try:
             unit = Bithumb._convert_unit(withdraw_unit)
-            resp = await self.api.withdraw_coin(units=unit,
+            resp = await self.private_api.withdraw_coin(units=unit,
                                         address=target_address,
                                         destination=destination_tag_or_memo,
                                         currency=withdraw_currency)
@@ -405,12 +459,16 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await self.api.withdraw_coin(bank=target_bank,
+            resp = await self.private_api.withdraw_coin(bank=target_bank,
                                         account=target_account,
                                         price=target_amount)
             return resp['order_id']
         except Exception as x:
-            print('AsyncBithumb: in "withdraw_cash" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "withdraw_cash" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
@@ -424,14 +482,18 @@ class Bithumb:
         """
         resp = None
         try:
-            resp = await self.api.user_transactions(order_currency=order_currency,
+            resp = await self.private_api.user_transactions(order_currency=order_currency,
                                           payment_currency=payment_currency,
                                           offset=offset,
                                           count=count,
                                           search=search)
             return resp['order_id']
         except Exception as x:
-            print('AsyncBithumb: in "user_transactions" got an error.\nResponse from Bithumb: ', resp)
+            print('AsyncBithumb: in "user_transactions" got an error.')
+            try:
+                print('Response from Bithumb: ', resp)
+            except:
+                pass
             raise x
 
 
