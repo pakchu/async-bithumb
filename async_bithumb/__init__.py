@@ -1,7 +1,7 @@
 from .client import Bithumb
 from .websocket import WebSocketManager
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 bithumb = Bithumb(public_api_rate_limit=150, private_api_rate_limit=140)
 

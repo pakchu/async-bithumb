@@ -11,7 +11,7 @@ class Bithumb:
         self.private_api = PrivateApi(conkey, seckey, private_api_rate_limit)
 
     @staticmethod
-    def _convert_unit(units):
+    def _convert_unit(unit):
         try:
             unit = math.floor(unit * 10000) / 10000
             return unit
