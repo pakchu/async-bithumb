@@ -486,8 +486,12 @@ class Bithumb:
                                           payment_currency=payment_currency,
                                           offset=offset,
                                           count=count,
-                                          search=search)
-            return resp['order_id']
+                                          searchGb=search)
+            df = pd.DataFrame(resp['data'])
+            df.loc[:, ['units', 'price', 'amount', 'fee', 'order_balance', 'payment_balance']] = df[['units', 'price', 'amount', 'fee', 'order_balance', 'payment_balance']].applymap(lambda x: x.replace(' ', '').replace(',', '')).astype(float)
+            df.loc[:, ['search', 'transfer_date']] = df[['search', 'transfer_date']].astype(int)
+            df.index = pd.to_datetime(df.transfer_date / 1000, unit='ms') + pd.Timedelta(hours=9)
+            return df
         except Exception as x:
             print('AsyncBithumb: in "user_transactions" got an error.')
             try:
